@@ -1,0 +1,36 @@
+
+# system_relayer_owner: address, 
+# local_chain_id: u64, 
+# system_fee: u64
+
+supra move tool run \
+--function-id '87778f72feccbcca516bfdbf28317bd5682d7062203944b89ec820536870d4a9::relayer_settings::initialize' \
+--args address:87778f72feccbcca516bfdbf28317bd5682d7062203944b89ec820536870d4a9 u64:5 u64:0 \
+--rpc-url https://rpc-testnet.supra.com
+
+# id: u64, 
+# name: String, 
+# chain_type: u8
+
+supra move tool run \
+--function-id '87778f72feccbcca516bfdbf28317bd5682d7062203944b89ec820536870d4a9::relayer_chain::create_chain' \
+--args u64:1 string:"Eth" u8:1 \
+--rpc-url https://rpc-testnet.supra.com
+
+# id: u64, 
+
+supra move tool run \
+--function-id '87778f72feccbcca516bfdbf28317bd5682d7062203944b89ec820536870d4a9::initializer_settings::initialize' \
+--args u64:5 \
+--rpc-url https://rpc-testnet.supra.com
+
+# id: u64, 
+
+supra move tool run \
+--function-id '87778f72feccbcca516bfdbf28317bd5682d7062203944b89ec820536870d4a9::client_settings::initialize' \
+--args u64:5 \
+--rpc-url https://rpc-testnet.supra.com
+
+supra move tool view \
+--function-id '87778f72feccbcca516bfdbf28317bd5682d7062203944b89ec820536870d4a9::relayer_settings::get_local_chain_id' \
+--rpc-url https://rpc-testnet.supra.com

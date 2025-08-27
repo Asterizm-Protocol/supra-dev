@@ -1,0 +1,16 @@
+[package]
+name = "asterizm"
+version = "1.0.0"
+authors = []
+
+[addresses]
+asterizm = "0x65df673fa8b99f4cd848c888fa8a50935917777095e8e7f2315990ecc93ffe5f"
+
+[dev-addresses]
+
+[dependencies.SupraFramework]
+git = "https://github.com/Entropy-Foundation/aptos-core.git"
+rev = "dev"
+subdir = "aptos-move/framework/supra-framework"
+
+[dev-dependencies]
