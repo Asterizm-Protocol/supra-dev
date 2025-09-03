@@ -29,6 +29,13 @@ module asterizm::client_receive_message {
         transfer_hash: vector<u8>,
     }
 
+    #[event]
+    struct TransferSendingResultEvent has drop, store {
+        dst_address: address,
+        transfer_hash: vector<u8>,
+        status_code: u8
+    }
+
     public(friend) fun init_receive_message(
         dst_address: address,
         src_address: address,
@@ -37,7 +44,7 @@ module asterizm::client_receive_message {
         transfer_hash: vector<u8>,
     ) {
         let (_, trusted_addresses, _) = client_client::get_client_info(dst_address);
-        
+
         let trusted_address = *simple_map::borrow(&trusted_addresses, &src_chain_id);
 
         assert!(trusted_address == src_address, E_UNAUTHORIZED);
@@ -53,7 +60,7 @@ module asterizm::client_receive_message {
             }
         );
     }
-    
+
     public entry fun receive_message(
         sender: &signer,
         dst_address: address,
@@ -72,7 +79,7 @@ module asterizm::client_receive_message {
         let local_chain_id = client_settings::get_local_chain_id();
 
         let client_disable_hash_validation = client_client::get_client_disable_hash_validation(dst_address);
-      
+
         let buffer = client_serialize::serialize_message(
             src_chain_id,
             src_address,
@@ -97,5 +104,21 @@ module asterizm::client_receive_message {
         };
 
         client_client::set_incoming_transfer_success(dst_address, transfer_hash);
+    }
+
+    public(friend) fun transfer_sending_result(
+        dst_address: address,
+        transfer_hash: vector<u8>,
+        status_code: u8
+    ) {
+        let (_, _, _) = client_client::get_client_info(dst_address);
+
+        event::emit(
+            TransferSendingResultEvent {
+                dst_address,
+                transfer_hash,
+                status_code,
+            }
+        );
     }
 }

@@ -53,4 +53,18 @@ module asterizm::initializer_receive_message {
         );
 
     }
+
+    public(friend) fun transfer_sending_result(
+        dst_address: address,
+        transfer_hash: vector<u8>,
+        status_code: u8,
+    ) {
+
+        client_receive_message::transfer_sending_result(
+            dst_address,
+            transfer_hash,
+            status_code
+        );
+
+    }
 }
