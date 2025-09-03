@@ -372,4 +372,48 @@ module asterizm::client_client {
         }
     }
 
+    public entry fun process_refund_request_by_user(
+        user: address,
+        transfer_hash: vector<u8>,
+        status: bool,
+    ) acquires RefundAccounts, OutgoingTransfers {
+        let outgoing_transfers = borrow_global_mut<OutgoingTransfers>(user);
+        let transfer = table::borrow_mut(&mut outgoing_transfers.data, transfer_hash);
+
+        assert!(!transfer.success_execute && !transfer.refunded, E_UNAUTHORIZED);
+
+        let refunds = borrow_global_mut<RefundAccounts>(user);
+
+        let refund = table::borrow_mut(&mut refunds.data, transfer_hash);
+
+        assert!(refund.status == 0, E_UNAUTHORIZED);
+
+        transfer.refunded = true;
+
+        if (status) {
+            refund.status = 1;
+        } else {
+            refund.status = 2;
+        }
+    }
+
+    [view]
+    public fun get_refund_status(
+        user: address,
+        transfer_hash: vector<u8>
+    ): u64 acquires RefundAccounts {
+        let refunds = borrow_global<RefundAccounts>(user);
+        let refund = table::borrow(&refunds.data, transfer_hash);
+        refund.status
+    }
+
+    [view]
+    public fun get_outgoing_transfer_success_refunded(
+        user: address,
+        transfer_hash: vector<u8>
+    ): (bool, bool) acquires OutgoingTransfers {
+        let client = borrow_global<OutgoingTransfers>(user);
+        let transfer = table::borrow(&client.data, transfer_hash);
+        (transfer.success_execute, transfer.refunded)
+    }
 }
