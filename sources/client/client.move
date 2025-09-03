@@ -35,7 +35,11 @@ module asterizm::client_client {
     struct IncomingTransfers has key {
         data: Table<vector<u8>, IncomingTransfer>,
     }
-    
+
+    struct RefundAccounts has key {
+        data: Table<vector<u8>, RefundAccount>,
+    }
+
     struct OutgoingTransfer has store {
         success_execute: bool,
         refunded: bool,
@@ -45,7 +49,11 @@ module asterizm::client_client {
         success_receive: bool,
         success_execute: bool,
     }
-    
+
+    struct RefundAccount has store {
+        status: u8,
+    }
+
     // Events
     #[event]
     struct ClientCreatedEvent has drop, store {
@@ -53,6 +61,12 @@ module asterizm::client_client {
         relay_owner: address,
         notify_transfer_sending: bool,
         disable_hash_validation: bool,
+    }
+
+    #[event]
+    struct AddRefundRequestEvent has drop, store {
+        user_address: address,
+        transfer_hash: vector<u8>
     }
 
     // Client management
@@ -65,7 +79,7 @@ module asterizm::client_client {
     ) {
         let user_addr = signer::address_of(user);
         assert!(!exists<Client>(user_addr), E_ALREADY_INITIALIZED);
-        
+
         move_to(user, Client {
             user_address: user_addr,
             relay_owner,
@@ -75,14 +89,18 @@ module asterizm::client_client {
             tx_id: 0,
             trusted_addresses: simple_map::create(),
             senders: vector[],
-        });       
-        
+        });
+
         move_to(user, OutgoingTransfers {
             data: table::new<vector<u8>, OutgoingTransfer>(),
         });
 
         move_to(user, IncomingTransfers {
             data: table::new<vector<u8>, IncomingTransfer>(),
+        });
+
+        move_to(user, RefundAccounts {
+            data: table::new<vector<u8>, RefundAccount>(),
         });
 
         event::emit(
@@ -95,6 +113,16 @@ module asterizm::client_client {
         );
     }
 
+    public entry fun create_client_refund_accounts(
+        user: &signer,
+    ) {
+        let user_addr = signer::address_of(user);
+
+        move_to(user, RefundAccounts {
+            data: table::new<vector<u8>, RefundAccount>(),
+        });
+    }
+
     public entry fun create_trusted_address(
         user: &signer,
         chain_id: u64,
@@ -102,9 +130,9 @@ module asterizm::client_client {
     ) acquires Client {
         let user_addr = signer::address_of(user);
         let client = borrow_global_mut<Client>(user_addr);
-        
+
         assert!(client.user_address == user_addr, E_UNAUTHORIZED);
-        
+
         simple_map::add(&mut client.trusted_addresses, chain_id, trusted_address);
     }
 
@@ -114,9 +142,9 @@ module asterizm::client_client {
     ) acquires Client {
         let user_addr = signer::address_of(user);
         let client = borrow_global_mut<Client>(user_addr);
-        
+
         assert!(client.user_address == user_addr, E_UNAUTHORIZED);
-        
+
         simple_map::remove(&mut client.trusted_addresses, &chain_id);
     }
 
@@ -126,7 +154,7 @@ module asterizm::client_client {
     ) acquires Client {
         let user_addr = signer::address_of(user);
         let client = borrow_global_mut<Client>(user_addr);
-        
+
         assert!(client.user_address == user_addr, E_UNAUTHORIZED);
 
         vector::push_back(&mut client.senders, sender);
@@ -138,7 +166,7 @@ module asterizm::client_client {
     ) acquires Client {
         let user_addr = signer::address_of(user);
         let client = borrow_global_mut<Client>(user_addr);
-        
+
         assert!(client.user_address == user_addr, E_UNAUTHORIZED);
 
         let (found, index) = vector::index_of(&client.senders, &sender);
@@ -274,6 +302,51 @@ module asterizm::client_client {
         let client = borrow_global_mut<IncomingTransfers>(user);
         let transfer = table::borrow_mut(&mut client.data,transfer_hash);
         transfer.success_execute = true;
+    }
+
+    public entry fun add_refund_request(
+        sender: &signer,
+        transfer_hash: vector<u8>
+    ) acquires RefundAccounts {
+        let user = signer::address_of(sender);
+        let client = borrow_global_mut<RefundAccounts>(user);
+        table::add(&mut client.data, transfer_hash, RefundAccount {
+            status: 0,
+        });
+
+        event::emit(
+            AddRefundRequestEvent {
+                user_address: user,
+                transfer_hash
+            }
+        );
+    }
+
+    public entry fun process_refund_request(
+        sender: &signer,
+        transfer_hash: vector<u8>,
+        status: bool,
+    ) acquires RefundAccounts, OutgoingTransfers {
+        let user = signer::address_of(sender);
+
+        let outgoing_transfers = borrow_global_mut<OutgoingTransfers>(user);
+        let transfer = table::borrow_mut(&mut outgoing_transfers.data, transfer_hash);
+
+        assert!(!transfer.success_execute && !transfer.refunded, E_UNAUTHORIZED);
+
+        let refunds = borrow_global_mut<RefundAccounts>(user);
+
+        let refund = table::borrow_mut(&mut refunds.data, transfer_hash);
+
+        assert!(refund.status == 0, E_UNAUTHORIZED);
+
+        transfer.refunded = true;
+
+        if (status) {
+            refund.status = 1;
+        } else {
+            refund.status = 2;
+        }
     }
 
 }

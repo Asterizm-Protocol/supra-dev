@@ -341,6 +341,62 @@ module asterizm::main_tests {
         assert!(new_tx_id == 1, 500);
     }
 
+    // Message Send Refund Flow Tests
+    #[test(supra_framework = @supra_framework, admin = @asterizm, user = @0x456, relayer = @0x123, sender = @0x789)]
+    fun test_message_refund_flow(
+        supra_framework: signer,
+        admin: signer,
+        user: signer,
+        relayer: signer,
+        sender: signer,
+        ) {
+        setup_asterizm_admin();
+        relayer_settings::initialize(&admin, TEST_RELAY_OWNER, TEST_LOCAL_CHAIN_ID, TEST_FEE);
+        relayer_chain::create_chain(&admin, TEST_CHAIN_ID, string::utf8(b"Eth"), 2);
+        initializer_settings::initialize(&admin, TEST_LOCAL_CHAIN_ID);
+        client_settings::initialize(&admin, TEST_LOCAL_CHAIN_ID);
+        setup_client(&user);
+        mint_supra_coin(&supra_framework, &sender, &relayer, 10000);
+
+        // Test message initiation
+        let payload = b"test_payload";
+        let src_chain_id = TEST_LOCAL_CHAIN_ID;
+        let dst_chain_id = TEST_CHAIN_ID;
+        let src_address = TEST_USER;
+        let dst_address = TEST_USER;
+        let tx_id = 0;
+
+        let buffer = client_serialize::serialize_message(
+            src_chain_id,
+            src_address,
+            dst_chain_id,
+            dst_address,
+            tx_id,
+            payload
+        );
+
+        let transfer_hash = client_serialize::build_crosschain_hash(buffer);
+
+        client_send_message::init_send_message(
+            &sender,
+            dst_address,
+            dst_chain_id,
+            payload
+        );
+
+        // Test refund
+        client_client::add_refund_request(
+            &user,
+            transfer_hash,
+        );
+
+        client_client::process_refund_request(
+            &user,
+            transfer_hash,
+            true,
+        );
+    }
+
     // Message Flow Tests
     #[test(admin = @asterizm, user = @0x456, relayer = @0x123, sender = @0x789)]
     fun test_message_receive_flow(
@@ -376,8 +432,8 @@ module asterizm::main_tests {
         let transfer_hash = client_serialize::build_crosschain_hash(buffer);
 
         relayer_receive_message::transfer_message(
-            &relayer, 
-            src_chain_id, 
+            &relayer,
+            src_chain_id,
             src_address,
             TEST_USER,
             1,
@@ -393,6 +449,48 @@ module asterizm::main_tests {
             src_address,
             transfer_hash,
             payload
+        );
+    }
+
+    // Transfer sending result Tests
+    #[test(admin = @asterizm, user = @0x456, relayer = @0x123, sender = @0x789)]
+    fun test_message_transfer_sending_result_flow(
+        admin: signer,
+        user: signer,
+        relayer: signer,
+        sender: signer,
+        ) {
+        setup_asterizm_admin();
+        relayer_settings::initialize(&admin, TEST_RELAY_OWNER, TEST_LOCAL_CHAIN_ID, TEST_FEE);
+        relayer_chain::create_chain(&admin, TEST_CHAIN_ID, string::utf8(b"Eth"), 2);
+        initializer_settings::initialize(&admin, TEST_LOCAL_CHAIN_ID);
+        client_settings::initialize(&admin, TEST_LOCAL_CHAIN_ID);
+        setup_client(&user);
+
+        // Test message initiation
+        let src_chain_id = TEST_CHAIN_ID;
+        let local_chain_id = TEST_LOCAL_CHAIN_ID;
+        let dst_address = TEST_USER;
+        let src_address = TEST_USER;
+        let tx_id = 1;
+
+        let payload = b"test_payload";
+        let buffer = client_serialize::serialize_message(
+            src_chain_id,
+            src_address,
+            local_chain_id,
+            dst_address,
+            tx_id,
+            payload
+        );
+
+        let transfer_hash = client_serialize::build_crosschain_hash(buffer);
+
+        relayer_receive_message::transfer_sending_result(
+            &relayer,
+            dst_address,
+            transfer_hash,
+            1
         );
     }
 

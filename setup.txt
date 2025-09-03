@@ -34,3 +34,44 @@ supra move tool run \
 supra move tool view \
 --function-id '87778f72feccbcca516bfdbf28317bd5682d7062203944b89ec820536870d4a9::relayer_settings::get_local_chain_id' \
 --rpc-url https://rpc-testnet.supra.com
+
+supra move tool run \
+--function-id '65df673fa8b99f4cd848c888fa8a50935917777095e8e7f2315990ecc93ffe5f::client_client::create_trusted_address' \
+--args u64:1 address:65df673fa8b99f4cd848c888fa8a50935917777095e8e7f2315990ecc93ffe5f \
+--rpc-url https://rpc-testnet.supra.com
+
+supra move tool run \
+--function-id '65df673fa8b99f4cd848c888fa8a50935917777095e8e7f2315990ecc93ffe5f::client_client::create_sender' \
+--args address:65df673fa8b99f4cd848c888fa8a50935917777095e8e7f2315990ecc93ffe5f \
+--rpc-url https://rpc-testnet.supra.com
+
+supra move tool run \
+--function-id '65df673fa8b99f4cd848c888fa8a50935917777095e8e7f2315990ecc93ffe5f::client_send_message::send_message' \
+--args address:65df673fa8b99f4cd848c888fa8a50935917777095e8e7f2315990ecc93ffe5f u64:1 u128:1 hex:1234 u64:1 \
+--rpc-url https://rpc-testnet.supra.com
+
+
+supra move tool run \
+--function-id '65df673fa8b99f4cd848c888fa8a50935917777095e8e7f2315990ecc93ffe5f::relayer_receive_message::transfer_message' \
+--args u64:1 address:65df673fa8b99f4cd848c888fa8a50935917777095e8e7f2315990ecc93ffe5f address:65df673fa8b99f4cd848c888fa8a50935917777095e8e7f2315990ecc93ffe5f u128:1 hex:1234  \
+--rpc-url https://rpc-testnet.supra.com
+
+supra move tool run \
+--function-id '65df673fa8b99f4cd848c888fa8a50935917777095e8e7f2315990ecc93ffe5f::relayer_receive_message::transfer_sending_result' \
+--args address:65df673fa8b99f4cd848c888fa8a50935917777095e8e7f2315990ecc93ffe5f hex:1234 u8:1 \
+--rpc-url https://rpc-testnet.supra.com
+
+supra move tool run \
+--function-id '65df673fa8b99f4cd848c888fa8a50935917777095e8e7f2315990ecc93ffe5f::client_client::create_client_refund_accounts' \
+--rpc-url https://rpc-testnet.supra.com
+
+supra move tool run \
+--function-id '65df673fa8b99f4cd848c888fa8a50935917777095e8e7f2315990ecc93ffe5f::client_client::add_refund_request' \
+--args hex:1234 \
+--rpc-url https://rpc-testnet.supra.com
+
+supra move tool run \
+--function-id '65df673fa8b99f4cd848c888fa8a50935917777095e8e7f2315990ecc93ffe5f::client_client::process_refund_request' \
+--args hex:1234 bool: true \
+--rpc-url https://rpc-testnet.supra.com
+
