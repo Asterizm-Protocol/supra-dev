@@ -64,4 +64,20 @@ module asterizm::relayer_receive_message {
             }
         );
     }
+
+    public entry fun transfer_sending_result(
+        account: &signer,
+        dst_address: address,
+        transfer_hash: vector<u8>,
+        status_code: u8,
+        )  {
+
+        relayer_settings::check_custom_relay(signer::address_of(account));
+
+        initializer_receive_message::transfer_sending_result(
+            dst_address,
+            transfer_hash,
+            status_code
+        );
+    }
 }
