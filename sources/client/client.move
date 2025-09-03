@@ -305,10 +305,9 @@ module asterizm::client_client {
     }
 
     public entry fun add_refund_request(
-        sender: &signer,
+        user: address,
         transfer_hash: vector<u8>
     ) acquires RefundAccounts {
-        let user = signer::address_of(sender);
         let client = borrow_global_mut<RefundAccounts>(user);
         table::add(&mut client.data, transfer_hash, RefundAccount {
             status: 0,
