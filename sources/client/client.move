@@ -305,9 +305,33 @@ module asterizm::client_client {
     }
 
     public entry fun add_refund_request(
-        user: address,
+        sender: &signer,
         transfer_hash: vector<u8>
     ) acquires RefundAccounts {
+        let user = signer::address_of(sender);
+        let client = borrow_global_mut<RefundAccounts>(user);
+        table::add(&mut client.data, transfer_hash, RefundAccount {
+            status: 0,
+        });
+
+        event::emit(
+            AddRefundRequestEvent {
+                user_address: user,
+                transfer_hash
+            }
+        );
+    }
+
+    public entry fun add_refund_request_by_user(
+        user: address,
+        transfer_hash: vector<u8>
+    ) acquires RefundAccounts, OutgoingTransfers {
+
+        let outgoing_transfers = borrow_global<OutgoingTransfers>(user);
+        let transfer = table::borrow(&outgoing_transfers.data, transfer_hash);
+
+        assert!(!transfer.success_execute && !transfer.refunded, E_UNAUTHORIZED);
+
         let client = borrow_global_mut<RefundAccounts>(user);
         table::add(&mut client.data, transfer_hash, RefundAccount {
             status: 0,
