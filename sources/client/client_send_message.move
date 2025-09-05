@@ -108,7 +108,6 @@ module asterizm::client_send_message {
     public entry fun resend_message(
         sender: &signer,
         user_address: address,
-        dst_chain_id: u64,
         transfer_hash: vector<u8>,
         value: u64,
     ) {
@@ -116,7 +115,7 @@ module asterizm::client_send_message {
 
         client_client::check_sender_exist(user_address, sender_addr);
 
-        let (relay_owner, _trusted_address, _notify_transfer_sending_result) = client_client::get_sender_client_info(user_address, dst_chain_id);
+        let relay_owner = client_client::get_client_relay_owner(user_address);
         
         client_client::check_outgoing_transfer_success(user_address, transfer_hash);
 

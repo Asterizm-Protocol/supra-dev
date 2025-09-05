@@ -48,6 +48,7 @@ module asterizm::client_client {
     struct IncomingTransfer has store {
         success_receive: bool,
         success_execute: bool,
+        refunded: bool,
     }
 
     struct RefundAccount has store {
@@ -65,6 +66,7 @@ module asterizm::client_client {
 
     #[event]
     struct AddRefundRequestEvent has drop, store {
+        sender_address: address,
         user_address: address,
         transfer_hash: vector<u8>
     }
@@ -207,6 +209,19 @@ module asterizm::client_client {
     }
 
     #[view]
+    public fun get_client_relay_owner(
+        client: address,
+    ): (
+        address,
+    ) acquires Client {
+        assert!(exists<Client>(client), E_NOT_INITIALIZED);
+
+        let client = borrow_global<Client>(client);
+
+        client.relay_owner
+    }
+
+    #[view]
     public fun get_client_disable_hash_validation(
         client: address,
     ): bool acquires Client {
@@ -283,6 +298,7 @@ module asterizm::client_client {
         table::add(&mut client.data, transfer_hash, IncomingTransfer {
             success_receive: true,
             success_execute: false,
+            refunded: false,
         });
     }
 
@@ -292,7 +308,7 @@ module asterizm::client_client {
     ) acquires IncomingTransfers {
         let client = borrow_global<IncomingTransfers>(user);
         let transfer = table::borrow(&client.data, transfer_hash);
-        assert!(!transfer.success_execute, E_UNAUTHORIZED);
+        assert!(!transfer.success_execute && !transfer.refunded, E_UNAUTHORIZED);
     }
 
     public(friend) fun set_incoming_transfer_success(
@@ -304,28 +320,39 @@ module asterizm::client_client {
         transfer.success_execute = true;
     }
 
-    public entry fun add_refund_request(
-        sender: &signer,
+    public(friend) fun set_incoming_transfer_receive(
+        user: address,
         transfer_hash: vector<u8>
-    ) acquires RefundAccounts {
-        let user = signer::address_of(sender);
-        let client = borrow_global_mut<RefundAccounts>(user);
-        table::add(&mut client.data, transfer_hash, RefundAccount {
-            status: 0,
-        });
-
-        event::emit(
-            AddRefundRequestEvent {
-                user_address: user,
-                transfer_hash
-            }
-        );
+    ) acquires IncomingTransfers {
+        let client = borrow_global_mut<IncomingTransfers>(user);
+        let transfer = table::borrow_mut(&mut client.data,transfer_hash);
+        transfer.success_receive = true;
     }
 
-    public entry fun add_refund_request_by_user(
+    public(friend) fun set_incoming_transfer_refunded(
+        user: address,
+        transfer_hash: vector<u8>
+    ) acquires IncomingTransfers {
+        let client = borrow_global_mut<IncomingTransfers>(user);
+        let transfer = table::borrow_mut(&mut client.data,transfer_hash);
+        transfer.refunded = true;
+    }
+
+    public(friend) fun has_incoming_transfer(
+        user: address,
+        transfer_hash: vector<u8>
+    ): bool acquires IncomingTransfers {
+        let client = borrow_global<IncomingTransfers>(user);
+        table::contains(&client.data, transfer_hash)
+    }
+
+    public entry fun add_refund_request(
+        sender: &signer,
         user: address,
         transfer_hash: vector<u8>
     ) acquires RefundAccounts, OutgoingTransfers {
+
+        let sender_addr = signer::address_of(sender);
 
         let outgoing_transfers = borrow_global<OutgoingTransfers>(user);
         let transfer = table::borrow(&outgoing_transfers.data, transfer_hash);
@@ -339,6 +366,7 @@ module asterizm::client_client {
 
         event::emit(
             AddRefundRequestEvent {
+                sender_address: sender_addr,
                 user_address: user,
                 transfer_hash
             }
@@ -347,10 +375,13 @@ module asterizm::client_client {
 
     public entry fun process_refund_request(
         sender: &signer,
+        user: address,
         transfer_hash: vector<u8>,
         status: bool,
-    ) acquires RefundAccounts, OutgoingTransfers {
-        let user = signer::address_of(sender);
+    ) acquires RefundAccounts, OutgoingTransfers, Client {
+        let sender_addr = signer::address_of(sender);
+
+        check_sender_exist(user, sender_addr);
 
         let outgoing_transfers = borrow_global_mut<OutgoingTransfers>(user);
         let transfer = table::borrow_mut(&mut outgoing_transfers.data, transfer_hash);
@@ -372,28 +403,25 @@ module asterizm::client_client {
         }
     }
 
-    public entry fun process_refund_request_by_user(
+    public entry fun confirm_incoming_refund(
+        sender: &signer,
         user: address,
         transfer_hash: vector<u8>,
-        status: bool,
-    ) acquires RefundAccounts, OutgoingTransfers {
-        let outgoing_transfers = borrow_global_mut<OutgoingTransfers>(user);
-        let transfer = table::borrow_mut(&mut outgoing_transfers.data, transfer_hash);
+    ) acquires IncomingTransfers, Client {
+        let sender_addr = signer::address_of(sender);
 
-        assert!(!transfer.success_execute && !transfer.refunded, E_UNAUTHORIZED);
+        check_sender_exist(user, sender_addr);
 
-        let refunds = borrow_global_mut<RefundAccounts>(user);
-
-        let refund = table::borrow_mut(&mut refunds.data, transfer_hash);
-
-        assert!(refund.status == 0, E_UNAUTHORIZED);
-
-        transfer.refunded = true;
-
-        if (status) {
-            refund.status = 1;
+        let client = borrow_global_mut<IncomingTransfers>(user);
+        if (table::contains(&client.data, transfer_hash)) {
+            let transfer = table::borrow_mut(&mut client.data,transfer_hash);
+            transfer.refunded = true;
         } else {
-            refund.status = 2;
+            table::add(&mut client.data, transfer_hash, IncomingTransfer {
+                success_receive: false,
+                success_execute: false,
+                refunded: true,
+            });
         }
     }
 
@@ -408,12 +436,22 @@ module asterizm::client_client {
     }
 
     #[view]
-    public fun get_outgoing_transfer_success_refunded(
+    public fun get_outgoing_transfer_execute_refunded(
         user: address,
         transfer_hash: vector<u8>
     ): (bool, bool) acquires OutgoingTransfers {
         let client = borrow_global<OutgoingTransfers>(user);
         let transfer = table::borrow(&client.data, transfer_hash);
         (transfer.success_execute, transfer.refunded)
+    }
+
+    #[view]
+    public fun get_incoming_transfer_receive_execute_refunded(
+        user: address,
+        transfer_hash: vector<u8>
+    ): (bool, bool,bool) acquires IncomingTransfers {
+        let client = borrow_global<IncomingTransfers>(user);
+        let transfer = table::borrow(&client.data, transfer_hash);
+        ( transfer.success_receive, transfer.success_execute, transfer.refunded)
     }
 }

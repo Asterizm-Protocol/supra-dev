@@ -49,7 +49,12 @@ module asterizm::client_receive_message {
 
         assert!(trusted_address == src_address, E_UNAUTHORIZED);
 
-        client_client::add_incoming_transfer(dst_address, transfer_hash);
+        if (client_client::has_incoming_transfer(dst_address, transfer_hash))
+        {
+            client_client::set_incoming_transfer_receive(dst_address, transfer_hash);
+        } else {
+            client_client::add_incoming_transfer(dst_address, transfer_hash);
+        };
 
         event::emit(
             PayloadReceivedEvent {
