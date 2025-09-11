@@ -38,14 +38,15 @@ module asterizm::relayer_receive_message {
     }
 
     public entry fun transfer_message(
-        account: &signer, 
-        src_chain_id: u64, 
-        src_address: address, 
-        dst_address: address, 
-        tx_id: u128, 
+        account: &signer,
+        client: address,
+        src_chain_id: u64,
+        src_address: address,
+        dst_address: address,
+        tx_id: u128,
         transfer_hash: vector<u8>)  {
 
-        relayer_settings::check_custom_relay(signer::address_of(account));
+        relayer_settings::check_custom_relay(client, signer::address_of(account));
 
         initializer_receive_message::transfer_message(
             dst_address,
@@ -67,12 +68,13 @@ module asterizm::relayer_receive_message {
 
     public entry fun transfer_sending_result(
         account: &signer,
+        client: address,
         dst_address: address,
         transfer_hash: vector<u8>,
         status_code: u8,
         )  {
 
-        relayer_settings::check_custom_relay(signer::address_of(account));
+        relayer_settings::check_custom_relay(client, signer::address_of(account));
 
         initializer_receive_message::transfer_sending_result(
             dst_address,

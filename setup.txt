@@ -59,7 +59,7 @@ supra move tool run \
 # Sending transfer from relay to client in dst chain (third step). Params: hex - transferHash
 supra move tool run \
 --function-id '86bff94fc7a78299afffadc66d7323c82a061226bab4b9bec9fb651811e0490c::relayer_receive_message::transfer_message' \
---args u64:60001 address:86bff94fc7a78299afffadc66d7323c82a061226bab4b9bec9fb651811e0490c address:86bff94fc7a78299afffadc66d7323c82a061226bab4b9bec9fb651811e0490c u128:1 hex:...  \
+--args address:86bff94fc7a78299afffadc66d7323c82a061226bab4b9bec9fb651811e0490c u64:60001 address:86bff94fc7a78299afffadc66d7323c82a061226bab4b9bec9fb651811e0490c address:86bff94fc7a78299afffadc66d7323c82a061226bab4b9bec9fb651811e0490c u128:1 hex:...  \
 --rpc-url https://rpc-testnet.supra.com
 
 # Executing transfer in dst chain (fourth step). Params: first hex - transferHash, second hex - payload
@@ -71,7 +71,7 @@ supra move tool run \
 # Sending notification from relay. Params: hex - transferHash
 supra move tool run \
 --function-id '86bff94fc7a78299afffadc66d7323c82a061226bab4b9bec9fb651811e0490c::relayer_receive_message::transfer_sending_result' \
---args address:86bff94fc7a78299afffadc66d7323c82a061226bab4b9bec9fb651811e0490c hex:... u8:1 \
+--args address:86bff94fc7a78299afffadc66d7323c82a061226bab4b9bec9fb651811e0490c address:86bff94fc7a78299afffadc66d7323c82a061226bab4b9bec9fb651811e0490c hex:... u8:1 \
 --rpc-url https://rpc-testnet.supra.com
 
 # Creation refund accounts. NOT FOR MAINNET!

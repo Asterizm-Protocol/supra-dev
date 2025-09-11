@@ -1,8 +1,10 @@
 module asterizm::relayer_settings {
     use std::signer;
-    use supra_framework::event;
-    use aptos_std::table::{Self, Table};
+    use std::vector;
 
+    use supra_framework::event;
+
+    use aptos_std::table::{Self, Table};
 
     // Error codes.
 
@@ -18,9 +20,12 @@ module asterizm::relayer_settings {
     /// Unreachable, is a bug if thrown
     const ERR_UNREACHABLE: u64 = 303;
 
-    /// Unreachable, is a bug if thrown
+    /// Not relay owner
     const ERR_NOT_RELAY_OWNER: u64 = 304;
-    
+
+    /// Not sender
+    const ERR_NOT_SENDER: u64 = 305;
+
     struct RelayerSettings has key {
         system_relayer_owner: address,
         local_chain_id: u64,
@@ -33,6 +38,7 @@ module asterizm::relayer_settings {
 
     struct CustomRelayer has store, drop {
         fee: u64,
+        senders: vector<address>,
     }
 
     #[event]
@@ -61,9 +67,9 @@ module asterizm::relayer_settings {
 
 
     public entry fun initialize(
-        asterizm_admin: &signer, 
-        system_relayer_owner: address, 
-        local_chain_id: u64, 
+        asterizm_admin: &signer,
+        system_relayer_owner: address,
+        local_chain_id: u64,
         system_fee: u64
         ) {
 
@@ -74,7 +80,7 @@ module asterizm::relayer_settings {
             local_chain_id,
             system_fee,
         });
-        
+
         event::emit(CreateRelayerSettingsEvent {
             system_relayer_owner,
             local_chain_id,
@@ -82,7 +88,9 @@ module asterizm::relayer_settings {
         });
 
         let custom_relayers = table::new<address, CustomRelayer>();
-        table::add(&mut custom_relayers, system_relayer_owner, CustomRelayer { fee: system_fee });
+        let senders = vector::empty();
+        vector::push_back(&mut senders, system_relayer_owner);
+        table::add(&mut custom_relayers, system_relayer_owner, CustomRelayer { fee: system_fee, senders });
 
         move_to<CustomRelayers>(asterizm_admin, CustomRelayers {
             data: custom_relayers,
@@ -90,7 +98,7 @@ module asterizm::relayer_settings {
     }
 
     public entry fun update_settings(
-        asterizm_admin: &signer, 
+        asterizm_admin: &signer,
         system_fee: u64
         ) acquires RelayerSettings {
 
@@ -101,25 +109,27 @@ module asterizm::relayer_settings {
         let settings = borrow_global_mut<RelayerSettings>(@asterizm);
 
         settings.system_fee = system_fee;
-        
+
         event::emit( UpdateRelayerSettingsEvent {
             system_fee,
         });
     }
 
     public entry fun create_custom_relay(
-        asterizm_admin: &signer, 
-        owner: address, 
+        asterizm_admin: &signer,
+        owner: address,
         fee: u64
     ) acquires CustomRelayers {
         assert!(signer::address_of(asterizm_admin) == @asterizm, ERR_UNREACHABLE);
         let custom_relayers = borrow_global_mut<CustomRelayers>(@asterizm);
-        table::add(&mut custom_relayers.data, owner, CustomRelayer { fee});
+        let senders = vector::empty();
+        vector::push_back(&mut senders, owner);
+        table::add(&mut custom_relayers.data, owner, CustomRelayer { fee, senders });
     }
 
     public entry fun update_custom_relay(
-        asterizm_admin: &signer, 
-        owner: address, 
+        asterizm_admin: &signer,
+        owner: address,
         fee: u64
     ) acquires CustomRelayers {
         assert!(signer::address_of(asterizm_admin) == @asterizm, ERR_UNREACHABLE);
@@ -134,6 +144,17 @@ module asterizm::relayer_settings {
         });
     }
 
+    public entry fun add_sender_to_custom_relay(
+        asterizm_admin: &signer,
+        owner: address,
+        sender: address
+    ) acquires CustomRelayers {
+        assert!(signer::address_of(asterizm_admin) == @asterizm, ERR_UNREACHABLE);
+        let custom_relayers = borrow_global_mut<CustomRelayers>(@asterizm);
+        let transfer = table::borrow_mut(&mut custom_relayers.data, owner);
+        vector::push_back(&mut transfer.senders, sender);
+    }
+
     public fun get_relay_fee(relay_owner: address): u64 acquires CustomRelayers {
         let custom_relayers = borrow_global<CustomRelayers>(@asterizm);
         assert!(table::contains(&borrow_global<CustomRelayers>(@asterizm).data, relay_owner), ERR_NOT_RELAY_OWNER);
@@ -141,8 +162,12 @@ module asterizm::relayer_settings {
         transfer.fee
     }
 
-    public fun check_custom_relay(relay_owner: address) acquires CustomRelayers {
+    public fun check_custom_relay(relay_owner: address, sender: address) acquires CustomRelayers {
+        let custom_relayers = borrow_global<CustomRelayers>(@asterizm);
         assert!(table::contains(&borrow_global<CustomRelayers>(@asterizm).data, relay_owner), ERR_NOT_RELAY_OWNER);
+        let transfer = table::borrow(&custom_relayers.data, relay_owner);
+        let (found, _) = vector::index_of(&transfer.senders, &sender);
+        assert!(found, ERR_NOT_SENDER);
     }
 
     #[view]

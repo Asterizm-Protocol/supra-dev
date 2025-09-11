@@ -435,6 +435,7 @@ module asterizm::main_tests {
 
         relayer_receive_message::transfer_message(
             &relayer,
+            TEST_RELAY_OWNER,
             src_chain_id,
             src_address,
             TEST_USER,
@@ -490,6 +491,7 @@ module asterizm::main_tests {
 
         relayer_receive_message::transfer_message(
             &relayer,
+            TEST_RELAY_OWNER,
             src_chain_id,
             src_address,
             dst_address,
@@ -541,6 +543,7 @@ module asterizm::main_tests {
 
         relayer_receive_message::transfer_sending_result(
             &relayer,
+            TEST_RELAY_OWNER,
             dst_address,
             transfer_hash,
             1
@@ -755,8 +758,9 @@ module asterizm::main_tests {
         let transfer_hash = hash::sha2_256(buffer);
 
         relayer_receive_message::transfer_message(
-            &relayer, 
-            src_chain_id, 
+            &relayer,
+            TEST_RELAY_OWNER,
+            src_chain_id,
             TEST_USER,
             TEST_USER,
             1,
@@ -786,9 +790,10 @@ module asterizm::main_tests {
         initializer_settings::initialize(&admin, TEST_LOCAL_CHAIN_ID);
         // Block destination address
         initializer_settings::block_account(&admin, TEST_LOCAL_CHAIN_ID, TEST_USER);
-        
+
         relayer_receive_message::transfer_message(
-            &relayer, 
+            &relayer,
+            TEST_RELAY_OWNER,
             TEST_CHAIN_ID, 
             @0x999,
             TEST_USER,
