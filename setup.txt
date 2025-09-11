@@ -30,6 +30,11 @@ supra move tool view \
 --function-id 'cf097facd876f46de13c8a2400a1f918d2bf358f42c983ef9124de16cdca7478::relayer_settings::get_local_chain_id' \
 --rpc-url https://rpc-testnet.supra.com
 
+supra move tool run \
+--function-id 'cf097facd876f46de13c8a2400a1f918d2bf358f42c983ef9124de16cdca7478::relayer_settings::add_sender_to_custom_relay' \
+--args address:cf097facd876f46de13c8a2400a1f918d2bf358f42c983ef9124de16cdca7478 address:cf097facd876f46de13c8a2400a1f918d2bf358f42c983ef9124de16cdca7478 \
+--rpc-url https://rpc-testnet.supra.com
+
 
 # DEPLOY TOKEN AND EXECUTE coin_example::initialize!
 
@@ -44,7 +49,7 @@ supra move tool run \
 --rpc-url https://rpc-testnet.supra.com
 
 
-# Sending transfer initiation message in src chain (first step). DROP HEX PARAM IN MAINNET!!!
+# Sending transfer initiation message in src chain (first step)
 supra move tool run \
 --function-id 'cf097facd876f46de13c8a2400a1f918d2bf358f42c983ef9124de16cdca7478::coin_example::send_message' \
 --args address:cf097facd876f46de13c8a2400a1f918d2bf358f42c983ef9124de16cdca7478 u64:1000000 address:cf097facd876f46de13c8a2400a1f918d2bf358f42c983ef9124de16cdca7478 u64:60001 \
