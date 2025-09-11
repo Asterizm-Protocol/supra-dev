@@ -2,92 +2,92 @@
 # local_chain_id: u64,
 # system_fee: u64
 supra move tool run \
---function-id '86bff94fc7a78299afffadc66d7323c82a061226bab4b9bec9fb651811e0490c::relayer_settings::initialize' \
---args address:86bff94fc7a78299afffadc66d7323c82a061226bab4b9bec9fb651811e0490c u64:60001 u64:0 \
+--function-id 'cf097facd876f46de13c8a2400a1f918d2bf358f42c983ef9124de16cdca7478::relayer_settings::initialize' \
+--args address:cf097facd876f46de13c8a2400a1f918d2bf358f42c983ef9124de16cdca7478 u64:60001 u64:0 \
 --rpc-url https://rpc-testnet.supra.com
 
 # id: u64,
 # name: String,
 # chain_type: u8
 supra move tool run \
---function-id '86bff94fc7a78299afffadc66d7323c82a061226bab4b9bec9fb651811e0490c::relayer_chain::create_chain' \
+--function-id 'cf097facd876f46de13c8a2400a1f918d2bf358f42c983ef9124de16cdca7478::relayer_chain::create_chain' \
 --args u64:60001 string:"Supra" u8:1 \
 --rpc-url https://rpc-testnet.supra.com
 
 # id: u64,
 supra move tool run \
---function-id '86bff94fc7a78299afffadc66d7323c82a061226bab4b9bec9fb651811e0490c::initializer_settings::initialize' \
+--function-id 'cf097facd876f46de13c8a2400a1f918d2bf358f42c983ef9124de16cdca7478::initializer_settings::initialize' \
 --args u64:60001 \
 --rpc-url https://rpc-testnet.supra.com
 
 # id: u64,
 supra move tool run \
---function-id '86bff94fc7a78299afffadc66d7323c82a061226bab4b9bec9fb651811e0490c::client_settings::initialize' \
+--function-id 'cf097facd876f46de13c8a2400a1f918d2bf358f42c983ef9124de16cdca7478::client_settings::initialize' \
 --args u64:60001 \
 --rpc-url https://rpc-testnet.supra.com
 
 supra move tool view \
---function-id '86bff94fc7a78299afffadc66d7323c82a061226bab4b9bec9fb651811e0490c::relayer_settings::get_local_chain_id' \
+--function-id 'cf097facd876f46de13c8a2400a1f918d2bf358f42c983ef9124de16cdca7478::relayer_settings::get_local_chain_id' \
 --rpc-url https://rpc-testnet.supra.com
 
 
 # DEPLOY TOKEN AND EXECUTE coin_example::initialize!
 
 supra move tool run \
---function-id '86bff94fc7a78299afffadc66d7323c82a061226bab4b9bec9fb651811e0490c::client_client::create_trusted_address' \
---args u64:60001 address:86bff94fc7a78299afffadc66d7323c82a061226bab4b9bec9fb651811e0490c \
+--function-id 'cf097facd876f46de13c8a2400a1f918d2bf358f42c983ef9124de16cdca7478::client_client::create_trusted_address' \
+--args u64:60001 address:cf097facd876f46de13c8a2400a1f918d2bf358f42c983ef9124de16cdca7478 \
 --rpc-url https://rpc-testnet.supra.com
 
 supra move tool run \
---function-id '86bff94fc7a78299afffadc66d7323c82a061226bab4b9bec9fb651811e0490c::client_client::create_sender' \
---args address:86bff94fc7a78299afffadc66d7323c82a061226bab4b9bec9fb651811e0490c \
+--function-id 'cf097facd876f46de13c8a2400a1f918d2bf358f42c983ef9124de16cdca7478::client_client::create_sender' \
+--args address:cf097facd876f46de13c8a2400a1f918d2bf358f42c983ef9124de16cdca7478 \
 --rpc-url https://rpc-testnet.supra.com
 
 
 # Sending transfer initiation message in src chain (first step). DROP HEX PARAM IN MAINNET!!!
 supra move tool run \
---function-id '86bff94fc7a78299afffadc66d7323c82a061226bab4b9bec9fb651811e0490c::coin_example::send_message' \
---args address:86bff94fc7a78299afffadc66d7323c82a061226bab4b9bec9fb651811e0490c u64:1000000 address:86bff94fc7a78299afffadc66d7323c82a061226bab4b9bec9fb651811e0490c u64:60001 \
+--function-id 'cf097facd876f46de13c8a2400a1f918d2bf358f42c983ef9124de16cdca7478::coin_example::send_message' \
+--args address:cf097facd876f46de13c8a2400a1f918d2bf358f42c983ef9124de16cdca7478 u64:1000000 address:cf097facd876f46de13c8a2400a1f918d2bf358f42c983ef9124de16cdca7478 u64:60001 \
 --rpc-url https://rpc-testnet.supra.com
 
 # Sending transfer from client to relay in src chain (second step). Params: hex - transferHash
 supra move tool run \
---function-id '86bff94fc7a78299afffadc66d7323c82a061226bab4b9bec9fb651811e0490c::client_send_message::send_message' \
---args address:86bff94fc7a78299afffadc66d7323c82a061226bab4b9bec9fb651811e0490c u64:60001 u128:1 hex:... u64:1 \
+--function-id 'cf097facd876f46de13c8a2400a1f918d2bf358f42c983ef9124de16cdca7478::client_send_message::send_message' \
+--args address:cf097facd876f46de13c8a2400a1f918d2bf358f42c983ef9124de16cdca7478 u64:60001 u128:1 hex:... u64:1 \
 --rpc-url https://rpc-testnet.supra.com
 
 # Sending transfer from relay to client in dst chain (third step). Params: hex - transferHash
 supra move tool run \
---function-id '86bff94fc7a78299afffadc66d7323c82a061226bab4b9bec9fb651811e0490c::relayer_receive_message::transfer_message' \
---args address:86bff94fc7a78299afffadc66d7323c82a061226bab4b9bec9fb651811e0490c u64:60001 address:86bff94fc7a78299afffadc66d7323c82a061226bab4b9bec9fb651811e0490c address:86bff94fc7a78299afffadc66d7323c82a061226bab4b9bec9fb651811e0490c u128:1 hex:...  \
+--function-id 'cf097facd876f46de13c8a2400a1f918d2bf358f42c983ef9124de16cdca7478::relayer_receive_message::transfer_message' \
+--args address:cf097facd876f46de13c8a2400a1f918d2bf358f42c983ef9124de16cdca7478 u64:60001 address:cf097facd876f46de13c8a2400a1f918d2bf358f42c983ef9124de16cdca7478 address:cf097facd876f46de13c8a2400a1f918d2bf358f42c983ef9124de16cdca7478 u128:1 hex:...  \
 --rpc-url https://rpc-testnet.supra.com
 
 # Executing transfer in dst chain (fourth step). Params: first hex - transferHash, second hex - payload
 supra move tool run \
---function-id '86bff94fc7a78299afffadc66d7323c82a061226bab4b9bec9fb651811e0490c::coin_example::receive_message' \
---args address:86bff94fc7a78299afffadc66d7323c82a061226bab4b9bec9fb651811e0490c hex:... u64:60001 address:86bff94fc7a78299afffadc66d7323c82a061226bab4b9bec9fb651811e0490c u128:1 hex:... \
+--function-id 'cf097facd876f46de13c8a2400a1f918d2bf358f42c983ef9124de16cdca7478::coin_example::receive_message' \
+--args address:cf097facd876f46de13c8a2400a1f918d2bf358f42c983ef9124de16cdca7478 hex:... u64:60001 address:cf097facd876f46de13c8a2400a1f918d2bf358f42c983ef9124de16cdca7478 u128:1 hex:... \
 --rpc-url https://rpc-testnet.supra.com
 
 # Sending notification from relay. Params: hex - transferHash
 supra move tool run \
---function-id '86bff94fc7a78299afffadc66d7323c82a061226bab4b9bec9fb651811e0490c::relayer_receive_message::transfer_sending_result' \
---args address:86bff94fc7a78299afffadc66d7323c82a061226bab4b9bec9fb651811e0490c address:86bff94fc7a78299afffadc66d7323c82a061226bab4b9bec9fb651811e0490c hex:... u8:1 \
+--function-id 'cf097facd876f46de13c8a2400a1f918d2bf358f42c983ef9124de16cdca7478::relayer_receive_message::transfer_sending_result' \
+--args address:cf097facd876f46de13c8a2400a1f918d2bf358f42c983ef9124de16cdca7478 address:cf097facd876f46de13c8a2400a1f918d2bf358f42c983ef9124de16cdca7478 hex:... u8:1 \
 --rpc-url https://rpc-testnet.supra.com
 
 # Creation refund accounts. NOT FOR MAINNET!
 supra move tool run \
---function-id '86bff94fc7a78299afffadc66d7323c82a061226bab4b9bec9fb651811e0490c::client_client::create_client_refund_accounts' \
+--function-id 'cf097facd876f46de13c8a2400a1f918d2bf358f42c983ef9124de16cdca7478::client_client::create_client_refund_accounts' \
 --rpc-url https://rpc-testnet.supra.com
 
 # Adding refund request. Params: hex - transferHash
 supra move tool run \
---function-id '86bff94fc7a78299afffadc66d7323c82a061226bab4b9bec9fb651811e0490c::client_client::add_refund_request' \
+--function-id 'cf097facd876f46de13c8a2400a1f918d2bf358f42c983ef9124de16cdca7478::client_client::add_refund_request' \
 --args hex:... \
 --rpc-url https://rpc-testnet.supra.com
 
 # Processing refund request. Params: hex - transferHash, bool - refund status
 supra move tool run \
---function-id '86bff94fc7a78299afffadc66d7323c82a061226bab4b9bec9fb651811e0490c::client_client::process_refund_request' \
+--function-id 'cf097facd876f46de13c8a2400a1f918d2bf358f42c983ef9124de16cdca7478::client_client::process_refund_request' \
 --args hex:... bool: true \
 --rpc-url https://rpc-testnet.supra.com
 
