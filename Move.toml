@@ -4,7 +4,7 @@ version = "1.0.0"
 authors = []
 
 [addresses]
-asterizm = "0xcf097facd876f46de13c8a2400a1f918d2bf358f42c983ef9124de16cdca7478"
+asterizm = "0x4c6a65960071e17536abc8047b41bd8b8718a0c7796d8dc4f7b7cbcd9546beda"
 
 [dev-addresses]
 
