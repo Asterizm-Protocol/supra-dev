@@ -6,7 +6,7 @@
 
 ```bash
 mkdir -p ~/supra/configs/move_workspace
-docker run --name supra_cli -v ~/supra/configs:/supra/configs -e SUPRA_HOME=/supra/configs --net=host -itd asia-docker.pkg.dev/supra-devnet-misc/supra-testnet/validator-node:v6.3.0
+docker run --name supra_cli -v ~/supra/configs:/supra/configs -e SUPRA_HOME=/supra/configs --net=host -itd asia-docker.pkg.dev/supra-devnet-misc/supra-testnet/validator-node:v9.0.12
 ```
 
 2.  Create supra [key](https://docs.supra.com/move/getting-started/generate-key-profiles) - it will be your address.
